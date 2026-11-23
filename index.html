@@ -1,75 +1,133 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport"
-        content="width=device-width,initial-scale=1">
+        content="width=device-width, initial-scale=1.0">
 
-  <title>Business Empire — Complete Edition</title>
+  <title>Business Empire — Playable Edition</title>
 
-  <link rel="stylesheet" href="style.css?v=3.0">
+  <link rel="stylesheet" href="style.css?v=4fix">
 </head>
 
 <body>
-  <main id="app">
+  <div id="app">
 
-    <header>
+    <header class="top">
       <div>
-        <h1>BUSINESS <span>EMPIRE</span></h1>
-        <small>FROM ZERO TO CEO · COMPLETE EDITION</small>
+        <div class="brand">
+          BUSINESS <span>EMPIRE</span>
+        </div>
+        <div class="sub">
+          FROM ZERO TO CEO · PLAYABLE EDITION
+        </div>
       </div>
 
-      <div id="stats" aria-live="polite"></div>
+      <div class="stats" id="stats">
+        <span>Loading game...</span>
+      </div>
 
-      <button id="fullscreen">
+      <button class="btn" id="fullscreen">
         ⛶ Fullscreen
       </button>
     </header>
 
-    <section id="layout">
+    <main class="main">
 
-      <div id="city">
-        <canvas
-          id="map"
-          width="900"
-          height="550"
-          aria-label="Interactive business city">
-        </canvas>
+      <section class="city">
+        <div class="map" id="map">
 
-        <div id="mapHint">
-          Click a building to visit it
+          <div class="road"></div>
+
+          <button class="place" data-place="0"
+            style="left:4%;top:5%;width:26%;height:32%;
+                   --roof:#c46552;--wall:#ad8667">
+            <span class="emoji">☕</span>
+            <span class="name">COFFEE CO.</span>
+          </button>
+
+          <button class="place" data-place="1"
+            style="left:37%;top:5%;width:26%;height:32%;
+                   --roof:#668bb0;--wall:#899eae">
+            <span class="emoji">🏦</span>
+            <span class="name">CITY BANK</span>
+          </button>
+
+          <button class="place" data-place="2"
+            style="left:70%;top:5%;width:26%;height:32%;
+                   --roof:#87a35d;--wall:#c1a574">
+            <span class="emoji">🛒</span>
+            <span class="name">MARKET</span>
+          </button>
+
+          <button class="place" data-place="3"
+            style="left:4%;top:65%;width:26%;height:30%;
+                   --roof:#ae766b;--wall:#bc9a85">
+            <span class="emoji">🏠</span>
+            <span class="name">YOUR HOME</span>
+          </button>
+
+          <button class="place" data-place="4"
+            style="left:37%;top:65%;width:26%;height:30%;
+                   --roof:#82949c;--wall:#9d9da7">
+            <span class="emoji">🏢</span>
+            <span class="name">OFFICE</span>
+          </button>
+
+          <button class="place" data-place="5"
+            style="left:70%;top:65%;width:26%;height:30%;
+                   --roof:#bd885b;--wall:#a68c6f">
+            <span class="emoji">🏬</span>
+            <span class="name">CITY STORE</span>
+          </button>
+
+          <div class="avatar">🧍</div>
+
         </div>
-      </div>
 
-      <aside>
-        <div class="eyebrow" id="chapter"></div>
+        <div class="tip" id="tip">
+          Click a building to explore · Complete missions on the right
+        </div>
+      </section>
 
-        <h2 id="missionTitle"></h2>
+      <aside class="panel">
 
-        <p id="story"></p>
+        <div class="tag" id="tag">WELCOME</div>
 
-        <div id="choices"></div>
+        <div class="progress">
+          <div id="bar" style="width:0%"></div>
+        </div>
 
-        <div id="feedback" role="status"></div>
+        <h2 id="title">Start your business</h2>
 
-        <div id="controls">
-          <button id="restart">
+        <p id="story">Loading...</p>
+
+        <div class="choices" id="choices">
+          <button class="choice" disabled>
+            Loading...
+          </button>
+        </div>
+
+        <div id="feedback" class="feedback hidden"></div>
+
+        <div class="actions">
+          <button class="btn" id="restart">
             ↻ New game
           </button>
         </div>
+
       </aside>
+    </main>
 
-    </section>
-
-    <footer>
-      AP Business with Personal Finance ·
-      Original educational simulation ·
-      Progress saves automatically in this browser.
+    <footer class="footer">
+      Educational business simulation ·
+      5 chapters · 10 decisions ·
+      Automatic local saving
     </footer>
 
-  </main>
+  </div>
 
-  <script src="game.js?v=3.0"></script>
+  <script src="game.js?v=4fix" defer></script>
 </body>
 </html>

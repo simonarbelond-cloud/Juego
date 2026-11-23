@@ -1,618 +1,270 @@
 
 'use strict';
 
-(() => {
+(function () {
 
-  // ============================
-  // BUSINESS EMPIRE v3.0
-  // COMPLETE EDITION
-  // ============================
+  // =====================================
+  // BUSINESS EMPIRE — PLAYABLE EDITION
+  // =====================================
 
   const $ = id => document.getElementById(id);
 
-  const canvas = $('map');
-  const ctx = canvas.getContext('2d');
+  const STORAGE = 'business-empire-playable-fixed-v1';
 
-  if (!ctx) {
-    alert('Canvas is not supported by your browser.');
-    return;
-  }
-
-  const SAVE = 'business-empire-complete-v3';
-
-  // ============================
-  // INITIAL PLAYER STATE
-  // ============================
-
-  const initial = () => ({
-    cash: 2500,
-    debt: 0,
-    rep: 50,
-    knowledge: 0,
-    customers: 0,
-    chapter: 0,
-    step: 0,
-    finished: false,
-    failed: false,
-    history: []
-  });
-
-  let state;
-
-  try {
-    state = {
-      ...initial(),
-      ...JSON.parse(
-        localStorage.getItem(SAVE) || '{}'
-      )
-    };
-  } catch {
-    state = initial();
-  }
-
-  // ============================
-  // SAVE GAME
-  // ============================
-
-  const save = () => {
-    try {
-      localStorage.setItem(
-        SAVE,
-        JSON.stringify(state)
-      );
-    } catch {}
-  };
-
-  const money = n =>
-    '$' + Math.round(n).toLocaleString('en-US');
-
-  // ============================
-  // CITY LOCATIONS
-  // ============================
-
-  const locations = [
-    {
-      name: 'COFFEE CO.',
-      x: 55, y: 70,
-      w: 245, h: 170,
-      color: '#bb6c58',
-      roof: '#d48c61'
-    },
-    {
-      name: 'CITY BANK',
-      x: 355, y: 65,
-      w: 210, h: 170,
-      color: '#7087aa',
-      roof: '#a6b5c9'
-    },
-    {
-      name: 'MARKET',
-      x: 625, y: 70,
-      w: 220, h: 170,
-      color: '#7c9d67',
-      roof: '#b8b778'
-    },
-    {
-      name: 'YOUR HOME',
-      x: 60, y: 350,
-      w: 230, h: 155,
-      color: '#9e7a70',
-      roof: '#cc9e87'
-    },
-    {
-      name: 'OFFICE',
-      x: 360, y: 350,
-      w: 205, h: 155,
-      color: '#8c8f9c',
-      roof: '#b7bbc5'
-    },
-    {
-      name: 'CITY STORE',
-      x: 630, y: 350,
-      w: 210, h: 155,
-      color: '#9b8066',
-      roof: '#d5a67e'
-    }
-  ];
-
-  // ============================
-  // DRAWING FUNCTIONS
-  // ============================
-
-  function box(x, y, w, h, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, w, h);
-  }
-
-  function label(
-    value,
-    x,
-    y,
-    size = 16,
-    color = '#fff'
-  ) {
-    ctx.fillStyle = color;
-    ctx.font = `bold ${size}px monospace`;
-    ctx.textAlign = 'center';
-    ctx.fillText(value, x, y);
-  }
-
-  // ============================
-  // DRAW THE CITY
-  // ============================
-
-  function draw() {
-
-    // Grass
-    box(0, 0, 900, 550, '#567d66');
-
-    // Grass details
-    for (let x = 0; x < 900; x += 44) {
-      for (let y = 0; y < 550; y += 42) {
-        box(x + 9, y + 8, 3, 3, '#638a70');
-      }
-    }
-
-    // Road
-    box(0, 253, 900, 79, '#a7aaa3');
-    box(0, 264, 900, 57, '#424e5c');
-
-    // Road markings
-    for (let x = 15; x < 900; x += 80) {
-      box(x, 290, 38, 4, '#f2d078');
-    }
-
-    // Buildings
-    locations.forEach((b, i) => {
-
-      // Shadow
-      box(
-        b.x + 7,
-        b.y + 10,
-        b.w,
-        b.h,
-        '#30423f'
-      );
-
-      // Walls
-      box(
-        b.x,
-        b.y,
-        b.w,
-        b.h,
-        b.color
-      );
-
-      // Roof
-      box(
-        b.x + 10,
-        b.y + 9,
-        b.w - 20,
-        b.h - 43,
-        b.roof
-      );
-
-      // Sign
-      box(
-        b.x + 16,
-        b.y + 15,
-        b.w - 32,
-        32,
-        '#243a4b'
-      );
-
-      // Windows
-      for (let k = 0; k < 3; k++) {
-        const wx =
-          b.x + 24 + k * (b.w - 70) / 2;
-
-        box(
-          wx,
-          b.y + 75,
-          30,
-          27,
-          '#b7d8df'
-        );
-
-        box(
-          wx + 13,
-          b.y + 75,
-          4,
-          27,
-          '#58798a'
-        );
-      }
-
-      // Door
-      box(
-        b.x + b.w / 2 - 18,
-        b.y + b.h - 39,
-        36,
-        39,
-        '#3a4856'
-      );
-
-      // Building name
-      label(
-        b.name,
-        b.x + b.w / 2,
-        b.y + 37,
-        Math.min(17, b.w / 12)
-      );
-
-      // Mission star
-      if (
-        i === state.chapter % 6 &&
-        !state.finished &&
-        !state.failed
-      ) {
-        label(
-          '★',
-          b.x + b.w / 2,
-          b.y - 10,
-          29,
-          '#ffe07a'
-        );
-      }
-
-    });
-
-    // Player character
-    box(438, 284, 10, 20, '#243447');
-    box(449, 284, 10, 20, '#243447');
-    box(435, 267, 27, 22, '#49a7d5');
-    box(440, 254, 17, 17, '#e6b18a');
-
-    label('YOU', 448, 245, 12);
-
-    label(
-      'CLICK BUILDINGS TO EXPLORE',
-      450,
-      28,
-      14,
-      '#e8f7ec'
-    );
-  }
-
-  // ============================
-  // AP BUSINESS CHAPTERS
-  // ============================
+  // =====================================
+  // CHAPTERS AND MISSIONS
+  // =====================================
 
   const chapters = [
 
-    // CHAPTER 1
+    // UNIT 1 — ENTREPRENEURSHIP
     {
       name: 'UNIT 1 · ENTREPRENEURSHIP',
       title: 'Start Your Coffee Shop',
 
       intro:
-        'You have $2,500. Your goal is to build a coffee shop that solves a real customer need.',
+        'You have $2,500. Maya wants to help you launch a coffee shop.',
 
-      steps: [
+      missions: [
         {
-          q: 'What is your first move?',
+          q: 'What should you do before investing?',
 
           options: [
-            {
-              t: 'Survey potential customers (−$150)',
-              e: {
-                cash: -150,
-                knowledge: 20,
-                rep: 5
-              },
-              f: 'Research helps validate customer needs before investing.'
-            },
-            {
-              t: 'Buy equipment immediately (−$1,800)',
-              e: {
-                cash: -1800,
-                knowledge: 2
-              },
-              f: 'Equipment may be useful, but you have not validated demand.'
-            },
-            {
-              t: 'Rent the most expensive space (−$2,500)',
-              e: {
-                cash: -2500
-              },
-              f: 'Using all available cash creates a liquidity crisis.'
-            }
+            [
+              'Research customer demand (−$150)',
+              -150, 0, 5, 20, 0,
+              'Market research reduces uncertainty and helps identify customer needs.'
+            ],
+            [
+              'Buy equipment without research (−$1,800)',
+              -1800, 0, 0, 0, 0,
+              'You own equipment, but have very little cash left.'
+            ],
+            [
+              'Rent a luxury location (−$2,500)',
+              -2500, 0, 0, 0, 0,
+              'You spent all your savings. A business needs working capital.'
+            ]
           ]
         },
 
         {
-          q: 'A rival café opens nearby. What is your strategy?',
+          q: 'A competing café opens. How will you respond?',
 
           options: [
-            {
-              t: 'Offer a distinctive product customers want (−$200)',
-              e: {
-                cash: -200,
-                rep: 12,
-                knowledge: 10
-              },
-              f: 'Differentiation can create a competitive advantage.'
-            },
-            {
-              t: 'Copy every competitor price (−$300)',
-              e: {
-                cash: -300,
-                rep: -4
-              },
-              f: 'Price matching alone may not build a lasting advantage.'
-            },
-            {
-              t: 'Ignore your competitors',
-              e: {
-                rep: -12
-              },
-              f: 'Ignoring market changes can weaken your business.'
-            }
+            [
+              'Offer a distinctive product (−$200)',
+              -200, 0, 10, 10, 12,
+              'Differentiation can create competitive advantage.'
+            ],
+            [
+              'Copy prices without checking costs (−$300)',
+              -300, 0, -5, 0, 3,
+              'Matching prices can hurt margins.'
+            ],
+            [
+              'Ignore the competition',
+              0, 0, -12, 0, -5,
+              'Businesses should monitor their competitors.'
+            ]
           ]
         }
       ]
     },
 
-    // CHAPTER 2
+    // UNIT 2 — MARKETING
     {
       name: 'UNIT 2 · MARKETING',
-      title: 'Find Your Customers',
+      title: 'Win Your Customers',
 
       intro:
-        'Your café needs a clear target market and a marketing plan.',
+        'Your café needs customers, a target market, and a marketing strategy.',
 
-      steps: [
+      missions: [
         {
-          q: 'How will you promote your café?',
+          q: 'Which promotion is most appropriate for your small budget?',
 
           options: [
-            {
-              t: 'Target local students with a tested campaign (−$250)',
-              e: {
-                cash: -250,
-                customers: 40,
-                rep: 8,
-                knowledge: 10
-              },
-              f: 'Segmentation and measurable promotion can improve efficiency.'
-            },
-            {
-              t: 'Buy a giant billboard (−$1,200)',
-              e: {
-                cash: -1200,
-                customers: 15
-              },
-              f: 'Expensive promotion may not reach the right audience.'
-            },
-            {
-              t: 'Do no marketing',
-              e: {
-                customers: 3
-              },
-              f: 'Without awareness, fewer potential customers may visit.'
-            }
+            [
+              'Test targeted social ads (−$250)',
+              -250, 0, 8, 10, 30,
+              'Targeted campaigns can reach likely customers efficiently.'
+            ],
+            [
+              'Buy an expensive billboard (−$1,200)',
+              -1200, 0, 1, 0, 12,
+              'Broad advertising can be costly and hard to measure.'
+            ],
+            [
+              'Do not promote the café',
+              0, 0, -5, 0, 2,
+              'Low awareness can limit demand.'
+            ]
           ]
         },
 
         {
-          q: 'Customers say your coffee is too expensive. What next?',
+          q: 'Customers say your coffee is expensive. What do you do?',
 
           options: [
-            {
-              t: 'Test prices and customer willingness to pay (−$100)',
-              e: {
-                cash: -100,
-                customers: 20,
-                knowledge: 15
-              },
-              f: 'Price research can help balance demand and margins.'
-            },
-            {
-              t: 'Cut prices without calculating costs',
-              e: {
-                cash: -450,
-                customers: 12
-              },
-              f: 'Sales can increase while profit falls.'
-            },
-            {
-              t: 'Ignore customer feedback',
-              e: {
-                rep: -15,
-                customers: -8
-              },
-              f: 'Customer feedback is valuable marketing evidence.'
-            }
+            [
+              'Research willingness to pay (−$100)',
+              -100, 0, 5, 15, 20,
+              'Pricing should consider costs, customer value, and demand.'
+            ],
+            [
+              'Cut prices without calculating margins (−$400)',
+              -400, 0, 0, 0, 15,
+              'More sales do not always mean more profit.'
+            ],
+            [
+              'Ignore customer feedback',
+              0, 0, -15, 0, -10,
+              'Customer feedback is useful evidence.'
+            ]
           ]
         }
       ]
     },
 
-    // CHAPTER 3
+    // UNIT 3 — FINANCE
     {
-      name: 'UNIT 3 · FINANCE & ACCOUNTING',
-      title: 'Manage the Money',
+      name: 'UNIT 3 · FINANCE',
+      title: 'Keep Your Business Solvent',
 
       intro:
-        'Your business must cover expenses and keep enough cash to operate.',
+        'You need to manage borrowing, profit, and cash flow.',
 
-      steps: [
+      missions: [
         {
-          q: 'You need $1,000 for inventory. How do you finance it?',
+          q: 'You need inventory. How do you finance it?',
 
           options: [
-            {
-              t: 'Use savings if available (−$1,000)',
-              e: {
-                cash: -1000,
-                knowledge: 10
-              },
-              f: 'Self-financing avoids interest, but reduces available cash.'
-            },
-            {
-              t: 'Take a $1,000 loan (+$1,000 cash and debt)',
-              e: {
-                cash: 1000,
-                debt: 1000
-              },
-              f: 'A loan increases cash and liabilities; it is not revenue.'
-            },
-            {
-              t: 'Borrow $3,000 unnecessarily',
-              e: {
-                cash: 3000,
-                debt: 3000
-              },
-              f: 'Excess debt increases future repayment obligations.'
-            }
+            [
+              'Buy only $500 of essential inventory',
+              -500, 0, 3, 10, 5,
+              'Smaller purchases preserve cash for other needs.'
+            ],
+            [
+              'Take a $1,000 loan',
+              1000, 1000, 0, 10, 8,
+              'Borrowing increases cash AND debt, not revenue.'
+            ],
+            [
+              'Borrow $3,000 without a plan',
+              3000, 3000, -5, 0, 8,
+              'More debt creates repayment obligations.'
+            ]
           ]
         },
 
         {
-          q: 'Your café earns $1,800 revenue and pays $1,100 operating costs. What is operating profit?',
+          q: 'Revenue is $1,800 and expenses are $1,100. What is operating profit?',
 
           options: [
-            {
-              t: '$700 — reinvest the profit',
-              e: {
-                cash: 700,
-                knowledge: 20,
-                rep: 5
-              },
-              f: 'Correct: $1,800 − $1,100 = $700 operating profit.'
-            },
-            {
-              t: '$1,800 — revenue equals profit',
-              e: {
-                cash: -250,
-                knowledge: 2
-              },
-              f: 'Revenue is not profit; expenses must be deducted.'
-            },
-            {
-              t: '$2,900 — add revenue and costs',
-              e: {
-                cash: -350
-              },
-              f: 'Expenses reduce profit; they are not added to revenue.'
-            }
+            [
+              '$700',
+              700, 0, 5, 20, 5,
+              'Correct: $1,800 − $1,100 = $700.'
+            ],
+            [
+              '$1,800',
+              -250, 0, 0, 0, 0,
+              'Revenue is not the same as profit.'
+            ],
+            [
+              '$2,900',
+              -350, 0, 0, 0, 0,
+              'Expenses must be subtracted from revenue.'
+            ]
           ]
         }
       ]
     },
 
-    // CHAPTER 4
+    // UNIT 4 — MANAGEMENT
     {
       name: 'UNIT 4 · MANAGEMENT',
       title: 'Lead Your Team',
 
       intro:
-        'Your café is growing. You need people, performance measures, and a strategy.',
+        'The café is growing. You must manage people and decide whether to expand.',
 
-      steps: [
+      missions: [
         {
           q: 'Employees are overwhelmed. What should you do?',
 
           options: [
-            {
-              t: 'Define roles and train the team (−$350)',
-              e: {
-                cash: -350,
-                rep: 12,
-                customers: 15,
-                knowledge: 10
-              },
-              f: 'Clear responsibilities and training improve coordination.'
-            },
-            {
-              t: 'Demand more work without support',
-              e: {
-                rep: -18,
-                customers: -12
-              },
-              f: 'Poor leadership can hurt morale and service.'
-            },
-            {
-              t: 'Hire without defining duties (−$600)',
-              e: {
-                cash: -600,
-                rep: -3
-              },
-              f: 'Hiring without clear roles may not solve the problem.'
-            }
+            [
+              'Train staff and clarify responsibilities (−$300)',
+              -300, 0, 12, 10, 10,
+              'Training and clear roles improve service.'
+            ],
+            [
+              'Demand more work with no support',
+              0, 0, -18, 0, -12,
+              'Poor leadership damages morale and customer experience.'
+            ],
+            [
+              'Hire without planning roles (−$600)',
+              -600, 0, -2, 0, 4,
+              'Hiring without a clear plan may not solve bottlenecks.'
+            ]
           ]
         },
 
         {
-          q: 'What is the best way to decide whether to expand?',
+          q: 'Should you open a second location?',
 
           options: [
-            {
-              t: 'Review cash flow, KPIs, and market demand (−$150)',
-              e: {
-                cash: -150,
-                knowledge: 20,
-                rep: 8
-              },
-              f: 'Use evidence and decision criteria before expanding.'
-            },
-            {
-              t: 'Open a second shop immediately (−$2,500)',
-              e: {
-                cash: -2500,
-                customers: 15
-              },
-              f: 'Expansion without sufficient capital can be dangerous.'
-            },
-            {
-              t: 'Follow a competitor without analysis (−$900)',
-              e: {
-                cash: -900
-              },
-              f: 'A competitor’s strategy may not fit your business.'
-            }
+            [
+              'Review KPIs and cash flow (−$150)',
+              -150, 0, 8, 20, 5,
+              'Use financial and market evidence to evaluate expansion.'
+            ],
+            [
+              'Expand immediately (−$2,500)',
+              -2500, 0, 0, 0, 20,
+              'Rapid expansion can create a cash shortage.'
+            ],
+            [
+              'Copy a competitor (−$900)',
+              -900, 0, -5, 0, 4,
+              'Another business strategy may not suit yours.'
+            ]
           ]
         }
       ]
     },
 
-    // CHAPTER 5
+    // UNIT 5 — PERSONAL FINANCE
     {
       name: 'UNIT 5 · PERSONAL FINANCE',
-      title: 'Build Your Future',
+      title: 'Plan Your Future',
 
       intro:
-        'Your business is only one part of financial well-being. Plan for personal goals and risks.',
+        'Your business is only one part of your financial life.',
 
-      steps: [
+      missions: [
         {
-          q: 'What should you do with your personal income?',
+          q: 'How should you manage your personal income?',
 
           options: [
-            {
-              t: 'Create a budget and emergency fund (−$300)',
-              e: {
-                cash: -300,
-                knowledge: 15,
-                rep: 5
-              },
-              f: 'Budgeting and emergency savings improve financial resilience.'
-            },
-            {
-              t: 'Spend everything on luxury goods (−$1,500)',
-              e: {
-                cash: -1500
-              },
-              f: 'Spending all income leaves no buffer for emergencies.'
-            },
-            {
-              t: 'Ignore taxes and future expenses (−$500)',
-              e: {
-                cash: -500,
-                rep: -10
-              },
-              f: 'Planning should account for obligations and future costs.'
-            }
+            [
+              'Build a budget and emergency fund (−$200)',
+              -200, 0, 5, 15, 0,
+              'A budget and emergency savings help manage uncertainty.'
+            ],
+            [
+              'Spend on luxury goods (−$1,500)',
+              -1500, 0, 0, 0, 0,
+              'Spending all savings reduces financial resilience.'
+            ],
+            [
+              'Ignore future expenses (−$500)',
+              -500, 0, -10, 0, 0,
+              'Plan for taxes and unexpected costs.'
+            ]
           ]
         },
 
@@ -620,30 +272,21 @@
           q: 'How should you approach long-term investing?',
 
           options: [
-            {
-              t: 'Diversify according to goals and risk tolerance (−$200)',
-              e: {
-                cash: -200,
-                knowledge: 20,
-                rep: 5
-              },
-              f: 'Diversification and time horizon matter when managing risk.'
-            },
-            {
-              t: 'Put all savings in one risky asset (−$1,000)',
-              e: {
-                cash: -1000
-              },
-              f: 'Concentration can expose you to major losses.'
-            },
-            {
-              t: 'Never plan for retirement',
-              e: {
-                knowledge: 0,
-                rep: -5
-              },
-              f: 'Long-term goals benefit from early planning.'
-            }
+            [
+              'Diversify according to your goals (−$200)',
+              -200, 0, 5, 20, 0,
+              'Diversification can reduce concentration risk, but not eliminate risk.'
+            ],
+            [
+              'Put everything into one risky asset (−$1,000)',
+              -1000, 0, 0, 0, 0,
+              'Concentrated investments can produce large losses.'
+            ],
+            [
+              'Never plan for retirement',
+              0, 0, -5, 0, 0,
+              'Long-term financial goals benefit from early planning.'
+            ]
           ]
         }
       ]
@@ -651,296 +294,364 @@
 
   ];
 
-  // ============================
-  // UPDATE PLAYER STATISTICS
-  // ============================
+  // =====================================
+  // PLAYER STATE
+  // =====================================
 
-  function stats() {
+  function fresh() {
+    return {
+      cash: 2500,
+      debt: 0,
+      rep: 50,
+      knowledge: 0,
+      customers: 0,
+      chapter: 0,
+      mission: 0,
+      finished: false,
+      failed: false,
+      feedback: '',
+      history: []
+    };
+  }
+
+  function read() {
+    try {
+      const x = JSON.parse(
+        localStorage.getItem(STORAGE)
+      );
+
+      if (
+        x &&
+        Number.isFinite(x.cash) &&
+        Number.isInteger(x.chapter) &&
+        x.chapter >= 0 &&
+        x.chapter <= 5 &&
+        Number.isInteger(x.mission) &&
+        x.mission >= 0 &&
+        x.mission <= 2
+      ) {
+        return { ...fresh(), ...x };
+      }
+
+    } catch (e) {
+      console.warn('Save unavailable:', e);
+    }
+
+    return fresh();
+  }
+
+  let state = read();
+
+  function save() {
+    try {
+      localStorage.setItem(
+        STORAGE,
+        JSON.stringify(state)
+      );
+    } catch (e) {
+      console.warn('Could not save game:', e);
+    }
+  }
+
+  // =====================================
+  // FORMATTING
+  // =====================================
+
+  const fmt = n =>
+    '$' + Math.round(n).toLocaleString('en-US');
+
+  // =====================================
+  // BUTTON CREATION
+  // =====================================
+
+  function button(label, handler) {
+    const b = document.createElement('button');
+
+    b.className = 'choice';
+    b.textContent = label;
+
+    b.addEventListener('click', handler);
+
+    $('choices').appendChild(b);
+  }
+
+  // =====================================
+  // RENDER GAME
+  // =====================================
+
+  function render() {
+
+    // Update statistics
     $('stats').innerHTML = `
-      <span>💵 ${money(state.cash)}</span>
-      <span>🏦 Debt ${money(state.debt)}</span>
+      <span>💵 ${fmt(state.cash)}</span>
+      <span>🏦 ${fmt(state.debt)}</span>
       <span>⭐ ${state.rep}/100</span>
       <span>📚 ${state.knowledge}</span>
       <span>👥 ${state.customers}</span>
     `;
-  }
-
-  // ============================
-  // CREATE DECISION BUTTONS
-  // ============================
-
-  function addButton(title, fn) {
-    const button = document.createElement('button');
-
-    button.textContent = title;
-    button.onclick = fn;
-
-    $('choices').append(button);
-  }
-
-  // ============================
-  // RENDER CURRENT MISSION
-  // ============================
-
-  function render() {
-
-    stats();
-    draw();
 
     $('choices').replaceChildren();
-    $('feedback').textContent = '';
+
+    const complete =
+      state.chapter * 2 + state.mission;
+
+    $('bar').style.width =
+      (Math.min(10, complete) * 10) + '%';
+
+    // Highlight current location
+    const activePlaces = [0, 0, 2, 1, 4];
+
+    document.querySelectorAll('.place')
+      .forEach((b, i) => {
+        b.classList.toggle(
+          'active',
+          !state.finished &&
+          !state.failed &&
+          i === activePlaces[
+            Math.min(state.chapter, 4)
+          ]
+        );
+      });
+
+    // Show previous decision feedback
+    $('feedback').textContent =
+      state.feedback || '';
+
+    $('feedback').classList.toggle(
+      'hidden',
+      !state.feedback
+    );
 
     // GAME OVER
     if (state.failed) {
+      $('tag').textContent = 'GAME OVER';
 
-      $('chapter').textContent = 'GAME OVER';
-
-      $('missionTitle').textContent = 'Bankruptcy';
+      $('title').textContent = 'Bankruptcy';
 
       $('story').textContent =
-        'You ran out of available cash. Review the lesson and try a different strategy.';
+        'Your business ran out of cash. Study the feedback and try again.';
 
-      addButton(
-        'Restart your business',
-        reset
-      );
-
+      button('↻ Restart game', restart);
       return;
     }
 
-    // FINAL ENDING
+    // FINISHED GAME
     if (state.finished) {
 
-      $('chapter').textContent =
-        'THE END · COMPLETE EDITION';
+      const net = state.cash - state.debt;
 
-      const success =
-        state.cash - state.debt >= 3000 &&
+      const win =
+        net >= 3000 &&
         state.rep >= 60;
 
-      $('missionTitle').textContent = success
-        ? 'Business Empire: Successful CEO'
-        : 'Business Empire: Lessons Learned';
+      $('tag').textContent =
+        'THE END · 10/10 MISSIONS';
 
-      $('story').textContent = `
-Final cash: ${money(state.cash)}
-Debt: ${money(state.debt)}
-Net cash after debt: ${money(state.cash - state.debt)}
-Reputation: ${state.rep}/100
+      $('title').textContent = win
+        ? '🏆 Successful CEO!'
+        : '🎓 Business Graduate';
 
-You completed all five learning chapters!
-      `;
+      $('story').textContent =
+        'You completed all five chapters!\n\n' +
+        'Cash: ' + fmt(state.cash) + '\n' +
+        'Debt: ' + fmt(state.debt) + '\n' +
+        'Cash minus debt: ' + fmt(net) + '\n' +
+        'Reputation: ' + state.rep + '/100\n\n' +
+        (
+          win
+            ? 'You built a financially strong company.'
+            : 'You learned important lessons. Try another strategy for a stronger result.'
+        );
 
-      addButton('Play again', reset);
-
+      button('Play again', restart);
       return;
     }
 
-    // CURRENT CHAPTER
-    const chapter = chapters[state.chapter];
+    // CURRENT MISSION
+    const ch = chapters[state.chapter];
+    const m = ch.missions[state.mission];
 
-    const mission = chapter.steps[state.step];
+    $('tag').textContent =
+      'CHAPTER ' + (state.chapter + 1) +
+      '/5 · ' + ch.name +
+      ' · MISSION ' + (complete + 1) + '/10';
 
-    $('chapter').textContent =
-      `CHAPTER ${state.chapter + 1}/5 · ${chapter.name}`;
-
-    $('missionTitle').textContent = chapter.title;
+    $('title').textContent = ch.title;
 
     $('story').textContent =
-      chapter.intro + '\n\n' + mission.q;
+      ch.intro + '\n\n' + m.q;
 
-    // OPTIONS
-    mission.options.forEach(option => {
-      addButton(
-        option.t,
-        () => choose(option)
+    // Show choices
+    m.options.forEach((o, i) => {
+      button(
+        String.fromCharCode(65 + i) + '. ' + o[0],
+        () => choose(o)
       );
     });
   }
 
-  // ============================
-  // APPLY DECISION
-  // ============================
+  // =====================================
+  // DECISION ENGINE
+  // =====================================
 
-  function choose(option) {
+  function choose(o) {
 
-    // Apply economic effects
-    for (const [key, value] of Object.entries(option.e)) {
-      state[key] = (state[key] || 0) + value;
-    }
+    const [
+      name,
+      cash,
+      debt,
+      rep,
+      knowledge,
+      customers,
+      lesson
+    ] = o;
+
+    // Apply immediate effects
+    state.cash += cash;
+    state.debt += debt;
 
     state.rep = Math.max(
       0,
-      Math.min(100, state.rep)
+      Math.min(100, state.rep + rep)
     );
+
+    state.knowledge += knowledge;
 
     state.customers = Math.max(
       0,
-      state.customers
+      state.customers + customers
     );
 
-    state.knowledge = Math.max(
-      0,
-      state.knowledge
-    );
-
-    // ============================
-    // BUSINESS OPERATING SIMULATION
-    // ============================
-
-    // Each decision represents one operating period.
-    // $15 revenue per customer, capped at $750.
+    // Simulate business activity
     const revenue = Math.min(
-      750,
-      state.customers * 15
+      650,
+      state.customers * 12
     );
 
-    // Fixed operating costs
-    const cost = 180;
+    const expenses = 120;
 
-    state.cash += revenue - cost;
+    const interest = Math.ceil(
+      state.debt * 0.02
+    );
 
-    // Loan interest
-    if (state.debt > 0) {
-      const interest = Math.ceil(
-        state.debt * 0.05
+    state.cash += revenue - expenses - interest;
+
+    // Educational feedback
+    state.feedback =
+      lesson + '\n\n' +
+      'Business period:\n' +
+      '+' + fmt(revenue) + ' sales\n' +
+      '−' + fmt(expenses) + ' costs\n' +
+      (
+        interest
+          ? '−' + fmt(interest) + ' loan interest.'
+          : 'No loan interest.'
       );
-
-      state.cash -= interest;
-    }
 
     // Save decision history
     state.history.push({
       chapter: state.chapter,
-      step: state.step,
-      choice: option.t
+      mission: state.mission,
+      choice: name
     });
-
-    const result = `
-${option.f}
-
-Operating simulation:
-+${money(revenue)} sales
-−${money(cost)} operating costs
-${state.debt > 0
-  ? 'Plus 5% interest on outstanding debt.'
-  : 'No loan interest.'}
-    `;
 
     // Bankruptcy
     if (state.cash <= 0) {
       state.failed = true;
     } else {
 
-      // Advance to next mission
-      state.step++;
+      // Next mission
+      state.mission++;
 
-      // Advance to next chapter
-      if (
-        state.step >=
-        chapters[state.chapter].steps.length
-      ) {
+      // Next chapter
+      if (state.mission >= 2) {
+        state.mission = 0;
         state.chapter++;
-        state.step = 0;
+      }
 
-        // Finish game
-        if (state.chapter >= chapters.length) {
-          state.finished = true;
-        }
+      // Complete game
+      if (state.chapter >= 5) {
+        state.finished = true;
       }
     }
 
     save();
     render();
-
-    $('feedback').textContent = result;
   }
 
-  // ============================
-  // RESTART GAME
-  // ============================
+  // =====================================
+  // RESTART
+  // =====================================
 
-  function reset() {
+  function restart() {
 
     if (
       !confirm(
-        'Start a new game? Your current progress will be replaced.'
+        'Start a new game? Current progress will be replaced.'
       )
     ) {
       return;
     }
 
-    state = initial();
+    state = fresh();
 
     save();
     render();
   }
 
-  $('restart').onclick = reset;
+  $('restart').addEventListener(
+    'click',
+    restart
+  );
 
-  // ============================
-  // FULLSCREEN MODE
-  // ============================
+  // =====================================
+  // CITY INTERACTION
+  // =====================================
 
-  $('fullscreen').onclick = async () => {
+  document.querySelectorAll('.place')
+    .forEach(b => {
 
-    try {
+      b.addEventListener('click', () => {
 
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        await $('app').requestFullscreen();
+        const name =
+          b.querySelector('.name').textContent;
+
+        $('tip').textContent =
+          'Visiting ' + name +
+          ' · Choose an answer in the mission panel';
+
+        b.classList.add('active');
+
+        setTimeout(() => {
+          render();
+        }, 700);
+      });
+    });
+
+  // =====================================
+  // FULLSCREEN
+  // =====================================
+
+  $('fullscreen').addEventListener(
+    'click',
+    async () => {
+
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          await $('app').requestFullscreen();
+        }
+      } catch (e) {
+        $('tip').textContent =
+          'Fullscreen is not available here.';
       }
-
-    } catch {
-
-      $('feedback').textContent =
-        'Fullscreen is not available in this browser.';
     }
-  };
+  );
 
-  // ============================
-  // CITY BUILDING INTERACTION
-  // ============================
-
-  canvas.addEventListener('click', event => {
-
-    const bounds = canvas.getBoundingClientRect();
-
-    const scale = Math.min(
-      bounds.width / 900,
-      bounds.height / 550
-    );
-
-    const offsetX =
-      (bounds.width - 900 * scale) / 2;
-
-    const offsetY =
-      (bounds.height - 550 * scale) / 2;
-
-    const x =
-      (event.clientX - bounds.left - offsetX) / scale;
-
-    const y =
-      (event.clientY - bounds.top - offsetY) / scale;
-
-    const building = locations.find(b =>
-      x >= b.x &&
-      x <= b.x + b.w &&
-      y >= b.y &&
-      y <= b.y + b.h
-    );
-
-    if (building) {
-      $('mapHint').textContent =
-        `Visiting ${building.name} · Make decisions in the mission panel`;
-    }
-
-  });
-
-  // ============================
-  // START GAME
-  // ============================
+  // =====================================
+  // START
+  // =====================================
 
   render();
 
