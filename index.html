@@ -1,0 +1,75 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1">
+
+  <title>Business Empire — Complete Edition</title>
+
+  <link rel="stylesheet" href="style.css?v=3.0">
+</head>
+
+<body>
+  <main id="app">
+
+    <header>
+      <div>
+        <h1>BUSINESS <span>EMPIRE</span></h1>
+        <small>FROM ZERO TO CEO · COMPLETE EDITION</small>
+      </div>
+
+      <div id="stats" aria-live="polite"></div>
+
+      <button id="fullscreen">
+        ⛶ Fullscreen
+      </button>
+    </header>
+
+    <section id="layout">
+
+      <div id="city">
+        <canvas
+          id="map"
+          width="900"
+          height="550"
+          aria-label="Interactive business city">
+        </canvas>
+
+        <div id="mapHint">
+          Click a building to visit it
+        </div>
+      </div>
+
+      <aside>
+        <div class="eyebrow" id="chapter"></div>
+
+        <h2 id="missionTitle"></h2>
+
+        <p id="story"></p>
+
+        <div id="choices"></div>
+
+        <div id="feedback" role="status"></div>
+
+        <div id="controls">
+          <button id="restart">
+            ↻ New game
+          </button>
+        </div>
+      </aside>
+
+    </section>
+
+    <footer>
+      AP Business with Personal Finance ·
+      Original educational simulation ·
+      Progress saves automatically in this browser.
+    </footer>
+
+  </main>
+
+  <script src="game.js?v=3.0"></script>
+</body>
+</html>
