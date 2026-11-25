@@ -3,131 +3,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-  <title>Business Empire — Playable Edition</title>
-
-  <link rel="stylesheet" href="style.css?v=4fix">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101b29">
+  <title>Business Empire - City Life</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div id="app">
 
-    <header class="top">
-      <div>
-        <div class="brand">
-          BUSINESS <span>EMPIRE</span>
+<div id="app">
+
+  <header class="hud">
+    <div class="brand">
+      BUSINESS <span>EMPIRE</span>
+      <small>CITY LIFE EDITION</small>
+    </div>
+
+    <div id="stats">
+      <div class="stat"><small>CASH</small><strong id="cash">$3,500</strong></div>
+      <div class="stat"><small>DEBT</small><strong id="debt">$0</strong></div>
+      <div class="stat"><small>REPUTATION</small><strong id="rep">50</strong></div>
+      <div class="stat"><small>CUSTOMERS</small><strong id="customers">0</strong></div>
+    </div>
+
+    <div class="header-actions">
+      <button id="phoneButton">PHONE [Q]</button>
+      <button id="fullscreenButton" class="secondary">FULLSCREEN</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="gameArea">
+      <canvas id="gameCanvas"></canvas>
+
+      <div class="objective">
+        <small>CURRENT OBJECTIVE</small>
+        <strong id="objective">Explore the city</strong>
+        <span id="destination">Use WASD to move</span>
+      </div>
+
+      <div id="interaction" class="interaction hidden">
+        <kbd>E</kbd> <span id="interactionText">INTERACT</span>
+      </div>
+
+      <div id="notification" class="notification hidden"></div>
+
+      <div class="controls">
+        WASD: MOVE · SHIFT: RUN · E: INTERACT · Q: PHONE
+      </div>
+
+      <div id="mobileControls">
+        <div class="pad">
+          <button data-key="w" class="up">W</button>
+          <button data-key="a">A</button>
+          <button data-key="s">S</button>
+          <button data-key="d">D</button>
         </div>
-        <div class="sub">
-          FROM ZERO TO CEO · PLAYABLE EDITION
+        <div class="mobile-actions">
+          <button id="mobileInteract">ACTION</button>
+          <button id="mobilePhone">PHONE</button>
         </div>
       </div>
 
-      <div class="stats" id="stats">
-        <span>Loading game...</span>
+      <div id="phone" class="overlay hidden">
+        <div class="phone">
+          <div class="phone-header">
+            <div>
+              <small>BUSINESS NETWORK</small>
+              <h2>EMPIRE OS</h2>
+            </div>
+            <button id="closePhone" class="close">X</button>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="missions">MISSIONS</button>
+            <button class="tab" data-tab="business">BUSINESS</button>
+            <button class="tab" data-tab="profile">PROFILE</button>
+          </div>
+
+          <div id="phoneContent"></div>
+        </div>
       </div>
 
-      <button class="btn" id="fullscreen">
-        ⛶ Fullscreen
-      </button>
-    </header>
-
-    <main class="main">
-
-      <section class="city">
-        <div class="map" id="map">
-
-          <div class="road"></div>
-
-          <button class="place" data-place="0"
-            style="left:4%;top:5%;width:26%;height:32%;
-                   --roof:#c46552;--wall:#ad8667">
-            <span class="emoji">☕</span>
-            <span class="name">COFFEE CO.</span>
-          </button>
-
-          <button class="place" data-place="1"
-            style="left:37%;top:5%;width:26%;height:32%;
-                   --roof:#668bb0;--wall:#899eae">
-            <span class="emoji">🏦</span>
-            <span class="name">CITY BANK</span>
-          </button>
-
-          <button class="place" data-place="2"
-            style="left:70%;top:5%;width:26%;height:32%;
-                   --roof:#87a35d;--wall:#c1a574">
-            <span class="emoji">🛒</span>
-            <span class="name">MARKET</span>
-          </button>
-
-          <button class="place" data-place="3"
-            style="left:4%;top:65%;width:26%;height:30%;
-                   --roof:#ae766b;--wall:#bc9a85">
-            <span class="emoji">🏠</span>
-            <span class="name">YOUR HOME</span>
-          </button>
-
-          <button class="place" data-place="4"
-            style="left:37%;top:65%;width:26%;height:30%;
-                   --roof:#82949c;--wall:#9d9da7">
-            <span class="emoji">🏢</span>
-            <span class="name">OFFICE</span>
-          </button>
-
-          <button class="place" data-place="5"
-            style="left:70%;top:65%;width:26%;height:30%;
-                   --roof:#bd885b;--wall:#a68c6f">
-            <span class="emoji">🏬</span>
-            <span class="name">CITY STORE</span>
-          </button>
-
-          <div class="avatar">🧍</div>
-
+      <div id="dialog" class="overlay hidden">
+        <div class="dialog-box">
+          <div class="dialog-header">
+            <small id="dialogCategory">BUSINESS DECISION</small>
+            <button id="closeDialog" class="close">X</button>
+          </div>
+          <h2 id="dialogTitle"></h2>
+          <p id="dialogText"></p>
+          <div id="dialogChoices"></div>
         </div>
+      </div>
 
-        <div class="tip" id="tip">
-          Click a building to explore · Complete missions on the right
+      <div id="ending" class="overlay hidden">
+        <div class="dialog-box ending-box">
+          <small>BUSINESS EMPIRE</small>
+          <h1 id="endingTitle">CAMPAIGN COMPLETE</h1>
+          <p id="endingText"></p>
+          <button id="restartButton">NEW GAME</button>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <aside class="panel">
+    <aside id="sidePanel">
+      <div class="section-label">YOUR BUSINESS JOURNEY</div>
+      <h2 id="missionTitle">Welcome, Entrepreneur</h2>
+      <div class="progress">
+        <div id="progressBar"></div>
+      </div>
+      <p id="missionDescription">
+        Explore the city and start building your business.
+      </p>
 
-        <div class="tag" id="tag">WELCOME</div>
+      <div id="sideChoices"></div>
 
-        <div class="progress">
-          <div id="bar" style="width:0%"></div>
+      <div class="business-panel">
+        <div class="section-label">BUSINESS STATUS</div>
+        <div class="business-row">
+          <span>Inventory</span>
+          <strong id="inventory">10 cups</strong>
         </div>
-
-        <h2 id="title">Start your business</h2>
-
-        <p id="story">Loading...</p>
-
-        <div class="choices" id="choices">
-          <button class="choice" disabled>
-            Loading...
-          </button>
+        <div class="business-row">
+          <span>Employees</span>
+          <strong id="staff">0</strong>
         </div>
-
-        <div id="feedback" class="feedback hidden"></div>
-
-        <div class="actions">
-          <button class="btn" id="restart">
-            ↻ New game
-          </button>
+        <div class="business-row">
+          <span>Business days</span>
+          <strong id="days">0</strong>
         </div>
+      </div>
 
-      </aside>
-    </main>
+      <button id="restartSmall" class="secondary full">RESTART GAME</button>
+    </aside>
+  </main>
 
-    <footer class="footer">
-      Educational business simulation ·
-      5 chapters · 10 decisions ·
-      Automatic local saving
-    </footer>
+  <footer>
+    BUSINESS EMPIRE · EDUCATIONAL BUSINESS SIMULATION
+  </footer>
 
-  </div>
+</div>
 
-  <script src="game.js?v=4fix" defer></script>
+<script src="actions.js" defer></script>
 </body>
 </html>
