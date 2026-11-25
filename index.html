@@ -19,15 +19,37 @@
     </div>
 
     <div id="stats">
-      <div class="stat"><small>CASH</small><strong id="cash">$3,500</strong></div>
-      <div class="stat"><small>DEBT</small><strong id="debt">$0</strong></div>
-      <div class="stat"><small>REPUTATION</small><strong id="rep">50</strong></div>
-      <div class="stat"><small>CUSTOMERS</small><strong id="customers">0</strong></div>
+      <div class="stat">
+        <small>CASH</small>
+        <strong id="cash">$3,500</strong>
+      </div>
+      <div class="stat">
+        <small>DEBT</small>
+        <strong id="debt">$0</strong>
+      </div>
+      <div class="stat">
+        <small>REPUTATION</small>
+        <strong id="rep">50</strong>
+      </div>
+      <div class="stat">
+        <small>CUSTOMERS</small>
+        <strong id="customers">0</strong>
+      </div>
     </div>
 
     <div class="header-actions">
       <button id="phoneButton">PHONE [Q]</button>
-      <button id="fullscreenButton" class="secondary">FULLSCREEN</button>
+
+      <button id="fullscreenButton" class="secondary">
+        FULLSCREEN
+      </button>
+
+      <a class="rate-button"
+         href="https://docs.google.com/forms/d/e/1FAIpQLScLxJrpTMsVQ_me5EIXCQf2qmtLUvo0rZ7uq6pAG4RWO3mA-Q/viewform?usp=publish-editor"
+         target="_blank"
+         rel="noopener noreferrer">
+        RATE THE GAME
+      </a>
     </div>
   </header>
 
@@ -42,7 +64,8 @@
       </div>
 
       <div id="interaction" class="interaction hidden">
-        <kbd>E</kbd> <span id="interactionText">INTERACT</span>
+        <kbd>E</kbd>
+        <span id="interactionText">INTERACT</span>
       </div>
 
       <div id="notification" class="notification hidden"></div>
@@ -58,6 +81,7 @@
           <button data-key="s">S</button>
           <button data-key="d">D</button>
         </div>
+
         <div class="mobile-actions">
           <button id="mobileInteract">ACTION</button>
           <button id="mobilePhone">PHONE</button>
@@ -66,6 +90,7 @@
 
       <div id="phone" class="overlay hidden">
         <div class="phone">
+
           <div class="phone-header">
             <div>
               <small>BUSINESS NETWORK</small>
@@ -75,43 +100,85 @@
           </div>
 
           <div class="tabs">
-            <button class="tab active" data-tab="missions">MISSIONS</button>
-            <button class="tab" data-tab="business">BUSINESS</button>
-            <button class="tab" data-tab="profile">PROFILE</button>
+            <button class="tab active" data-tab="missions">
+              MISSIONS
+            </button>
+            <button class="tab" data-tab="business">
+              BUSINESS
+            </button>
+            <button class="tab" data-tab="profile">
+              PROFILE
+            </button>
           </div>
 
           <div id="phoneContent"></div>
+
         </div>
       </div>
 
       <div id="dialog" class="overlay hidden">
         <div class="dialog-box">
+
           <div class="dialog-header">
             <small id="dialogCategory">BUSINESS DECISION</small>
             <button id="closeDialog" class="close">X</button>
           </div>
+
           <h2 id="dialogTitle"></h2>
           <p id="dialogText"></p>
           <div id="dialogChoices"></div>
+
         </div>
       </div>
 
       <div id="ending" class="overlay hidden">
         <div class="dialog-box ending-box">
+
           <small>BUSINESS EMPIRE</small>
+
           <h1 id="endingTitle">CAMPAIGN COMPLETE</h1>
+
           <p id="endingText"></p>
+
+          <!-- NEW FEATURE: PLAYER FEEDBACK -->
+
+          <div class="feedback-section">
+
+            <h3>RATE YOUR EXPERIENCE</h3>
+
+            <p>
+              Enjoyed Business Empire?
+              Help us improve the game by sharing your feedback.
+            </p>
+
+            <a class="rate-button rate-ending"
+               href="https://docs.google.com/forms/d/e/1FAIpQLScLxJrpTMsVQ_me5EIXCQf2qmtLUvo0rZ7uq6pAG4RWO3mA-Q/viewform?usp=publish-editor"
+               target="_blank"
+               rel="noopener noreferrer">
+              RATE THE GAME
+            </a>
+
+          </div>
+
           <button id="restartButton">NEW GAME</button>
+
         </div>
       </div>
+
     </section>
 
     <aside id="sidePanel">
-      <div class="section-label">YOUR BUSINESS JOURNEY</div>
+
+      <div class="section-label">
+        YOUR BUSINESS JOURNEY
+      </div>
+
       <h2 id="missionTitle">Welcome, Entrepreneur</h2>
+
       <div class="progress">
         <div id="progressBar"></div>
       </div>
+
       <p id="missionDescription">
         Explore the city and start building your business.
       </p>
@@ -119,22 +186,32 @@
       <div id="sideChoices"></div>
 
       <div class="business-panel">
-        <div class="section-label">BUSINESS STATUS</div>
+
+        <div class="section-label">
+          BUSINESS STATUS
+        </div>
+
         <div class="business-row">
           <span>Inventory</span>
           <strong id="inventory">10 cups</strong>
         </div>
+
         <div class="business-row">
           <span>Employees</span>
           <strong id="staff">0</strong>
         </div>
+
         <div class="business-row">
           <span>Business days</span>
           <strong id="days">0</strong>
         </div>
+
       </div>
 
-      <button id="restartSmall" class="secondary full">RESTART GAME</button>
+      <button id="restartSmall" class="secondary full">
+        RESTART GAME
+      </button>
+
     </aside>
   </main>
 
@@ -145,5 +222,6 @@
 </div>
 
 <script src="actions.js" defer></script>
+
 </body>
 </html>
